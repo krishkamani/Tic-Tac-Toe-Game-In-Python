@@ -15,3 +15,9 @@ Tic Tac Toe game
 ## Draw match message Image
 
 ![draw_messge](https://user-images.githubusercontent.com/52067673/83345796-9c0dd300-a334-11ea-8204-cb2611819a8a.png)
+
+
+## For Multiplayer you can use the multilpayer folder and play together
+ ## host ip address will be : 127.0.0.1 you can change this by changing player1.py file and port also 
+
+ 
