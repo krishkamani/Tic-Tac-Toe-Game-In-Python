@@ -2,207 +2,86 @@ from tkinter import *
 from tkinter import ttk
 import tkinter.messagebox
 
-root=Tk()
-root.title("Tic Tac Toe")
-#add Buttons
-bu1=ttk.Button(root,text=' ')
-bu1.grid(row=0,column=0,sticky='snew',ipadx=40,ipady=40)
-bu1.config(command=lambda: ButtonClick(1))
+class TicTacToe:
+    def __init__(self, master):
+        self.master = master
+        master.title("Tic Tac Toe")
 
-bu2=ttk.Button(root,text=' ')
-bu2.grid(row=0,column=1,sticky='snew',ipadx=40,ipady=40)
-bu2.config(command=lambda: ButtonClick(2))
+        self.a = 1
+        self.b = 0
+        self.c = 0
 
-bu3=ttk.Button(root,text=' ')
-bu3.grid(row=0,column=2,sticky='snew',ipadx=40,ipady=40)
-bu3.config(command=lambda: ButtonClick(3))
+        self.create_widgets()
 
-bu4=ttk.Button(root,text=' ')
-bu4.grid(row=1,column=0,sticky='snew',ipadx=40,ipady=40)
-bu4.config(command=lambda: ButtonClick(4))
+    def create_widgets(self):
+        # Add Buttons
+        self.buttons = [ttk.Button(self.master, text=' ') for _ in range(9)]
+        for i, button in enumerate(self.buttons):
+            row, col = divmod(i, 3)
+            button.grid(row=row, column=col, sticky='snew', ipadx=40, ipady=40)
+            button.config(command=lambda i=i: self.button_click(i + 1))
 
-bu5=ttk.Button(root,text=' ')
-bu5.grid(row=1,column=1,sticky='snew',ipadx=40,ipady=40)
-bu5.config(command=lambda: ButtonClick(5))
+        self.player_turn_label = ttk.Label(self.master, text="   Player 1 turn!   ")
+        self.player_turn_label.grid(row=3, column=0, sticky='snew', ipadx=40, ipady=40)
 
-bu6=ttk.Button(root,text=' ')
-bu6.grid(row=1,column=2,sticky='snew',ipadx=40,ipady=40)
-bu6.config(command=lambda: ButtonClick(6))
+        self.player_details_label = ttk.Label(self.master, text="    Player 1 is X\n\n    Player 2 is O")
+        self.player_details_label.grid(row=3, column=2, sticky='snew', ipadx=40, ipady=40)
 
-bu7=ttk.Button(root,text=' ')
-bu7.grid(row=2,column=0,sticky='snew',ipadx=40,ipady=40)
-bu7.config(command=lambda: ButtonClick(7))
+        self.restart_button = ttk.Button(self.master, text='Restart', command=self.restart_button)
+        self.restart_button.grid(row=3, column=1, sticky='snew', ipadx=40, ipady=40)
 
-bu8=ttk.Button(root,text=' ')
-bu8.grid(row=2,column=1,sticky='snew',ipadx=40,ipady=40)
-bu8.config(command=lambda: ButtonClick(8))
+    def restart_button(self):
+        self.a = 1
+        self.b = 0
+        self.c = 0
+        self.player_turn_label['text'] = "   Player 1 turn!   "
+        for button in self.buttons:
+            button['text'] = ' '
+            button.state(['!disabled'])
 
-bu9=ttk.Button(root,text=' ')
-bu9.grid(row=2,column=2,sticky='snew',ipadx=40,ipady=40)
-bu9.config(command=lambda: ButtonClick(9))
+    def disable_buttons(self):
+        for button in self.buttons:
+            button.state(['disabled'])
 
-playerturn=ttk.Label(root,text="   Player 1 turn!  ")
-playerturn.grid(row=3,column=0,sticky='snew',ipadx=40,ipady=40)
+    def button_click(self, id):
+        print("ID:{}".format(id))
 
-playerdetails=ttk.Label(root,text="    Player 1 is X\n\n    Player 2 is O")
-playerdetails.grid(row=3,column=2,sticky='snew',ipadx=40,ipady=40)
+        if ' ' not in [button['text'] for button in self.buttons]:
+            tkinter.messagebox.showinfo("Tic Tac Toe", "Match is Draw.")
+            self.disable_buttons()
+            self.c = 1
+            return
 
-res=ttk.Button(root,text='Restart')
-res.grid(row=3,column=1,sticky='snew',ipadx=40,ipady=40)
-res.config(command=lambda: restartbutton())
+        player = "Player 1" if self.a == 1 else "Player 2"
+        if self.buttons[id - 1]['text'] == ' ':
+            self.buttons[id - 1]['text'] = "X" if self.a == 1 else "O"
+            self.a = 1 - self.a
+            self.b += 1
 
-a=1
-b=0
-c=0
-def restartbutton():
-    global a,b,c
-    a=1
-    b=0
-    c=0
-    playerturn['text']="   Player 1 turn!   "
-    bu1['text']=' '
-    bu2['text']=' '
-    bu3['text']=' '
-    bu4['text']=' '
-    bu5['text']=' '
-    bu6['text']=' '
-    bu7['text']=' '
-    bu8['text']=' '
-    bu9['text']=' '
-    bu1.state(['!disabled'])
-    bu2.state(['!disabled'])
-    bu3.state(['!disabled'])
-    bu4.state(['!disabled'])
-    bu5.state(['!disabled'])
-    bu6.state(['!disabled'])
-    bu7.state(['!disabled'])
-    bu8.state(['!disabled'])
-    bu9.state(['!disabled'])
-    
-#after getting result(win or loss or draw) disable button
-def disableButton():
-    bu1.state(['disabled'])
-    bu2.state(['disabled'])
-    bu3.state(['disabled'])
-    bu4.state(['disabled'])
-    bu5.state(['disabled'])
-    bu6.state(['disabled'])
-    bu7.state(['disabled'])
-    bu8.state(['disabled'])
-    bu9.state(['disabled'])
+            if self.check_winner():
+                self.disable_buttons()
+                self.c = 1
+                tkinter.messagebox.showinfo("Tic Tac Toe", f"Winner is {player}")
 
+            if self.a == 1 and self.c == 0:
+                self.player_turn_label['text'] = "   Player 1 turn!   "
+            elif self.a == 0 and self.c == 0:
+                self.player_turn_label['text'] = "   Player 2 turn!   "
 
-def ButtonClick(id):
-    global a,b,c
-    print("ID:{}".format(id))
+    def check_winner(self):
+        winning_conditions = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],  # Rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],  # Columns
+            [0, 4, 8], [2, 4, 6]              # Diagonals
+        ]
 
-    #for player 1 turn
-    if id==1 and bu1['text']==' ' and a==1:
-        bu1['text']="X"
-        a=0
-        b+=1
-    if id==2 and bu2['text']==' ' and a==1:
-        bu2['text']="X"
-        a=0
-        b+=1
-    if id==3 and bu3['text']==' ' and a==1:
-        bu3['text']="X"
-        a=0
-        b+=1
-    if id==4 and bu4['text']==' ' and a==1:
-        bu4['text']="X"
-        a=0
-        b+=1
-    if id==5 and bu5['text']==' ' and a==1:
-        bu5['text']="X"
-        a=0
-        b+=1
-    if id==6 and bu6['text']==' ' and a==1:
-        bu6['text']="X"
-        a=0
-        b+=1
-    if id==7 and bu7['text']==' ' and a==1:
-        bu7['text']="X"
-        a=0
-        b+=1
-    if id==8 and bu8['text']==' ' and a==1:
-        bu8['text']="X"
-        a=0
-        b+=1
-    if id==9 and bu9['text']==' ' and a==1:
-        bu9['text']="X"
-        a=0
-        b+=1
-    #for player 2 turn
-    if id==1 and bu1['text']==' ' and a==0:
-        bu1['text']="O"
-        a=1
-        b+=1
-    if id==2 and bu2['text']==' ' and a==0:
-        bu2['text']="O"
-        a=1
-        b+=1
-    if id==3 and bu3['text']==' ' and a==0:
-        bu3['text']="O"
-        a=1
-        b+=1
-    if id==4 and bu4['text']==' ' and a==0:
-        bu4['text']="O"
-        a=1
-        b+=1
-    if id==5 and bu5['text']==' ' and a==0:
-        bu5['text']="O"
-        a=1
-        b+=1
-    if id==6 and bu6['text']==' ' and a==0:
-        bu6['text']="O"
-        a=1
-        b+=1
-    if id==7 and bu7['text']==' ' and a==0:
-        bu7['text']="O"
-        a=1
-        b+=1
-    if id==8 and bu8['text']==' ' and a==0:
-        bu8['text']="O"
-        a=1
-        b+=1
-    if id==9 and bu9['text']==' ' and a==0:
-        bu9['text']="O"
-        a=1
-        b+=1
-        
-    #checking for winner   
-    if( bu1['text']=='X' and bu2['text']=='X' and bu3['text']=='X' or
-        bu4['text']=='X' and bu5['text']=='X' and bu6['text']=='X' or
-        bu7['text']=='X' and bu8['text']=='X' and bu9['text']=='X' or
-        bu1['text']=='X' and bu4['text']=='X' and bu7['text']=='X' or
-        bu2['text']=='X' and bu5['text']=='X' and bu8['text']=='X' or
-        bu3['text']=='X' and bu6['text']=='X' and bu9['text']=='X' or
-        bu1['text']=='X' and bu5['text']=='X' and bu9['text']=='X' or
-        bu3['text']=='X' and bu5['text']=='X' and bu7['text']=='X'):
-            disableButton()
-            c=1
-            tkinter.messagebox.showinfo("Tic Tac Toe","Winner is player 1")
-    elif( bu1['text']=='O' and bu2['text']=='O' and bu3['text']=='O' or
-        bu4['text']=='O' and bu5['text']=='O' and bu6['text']=='O' or
-        bu7['text']=='O' and bu8['text']=='O' and bu9['text']=='O' or
-        bu1['text']=='O' and bu4['text']=='O' and bu7['text']=='O' or
-        bu2['text']=='O' and bu5['text']=='O' and bu8['text']=='O' or
-        bu3['text']=='O' and bu6['text']=='O' and bu9['text']=='O' or
-        bu1['text']=='O' and bu5['text']=='O' and bu9['text']=='O' or
-        bu3['text']=='O' and bu5['text']=='O' and bu7['text']=='O'):
-            disableButton()
-            c=1
-            tkinter.messagebox.showinfo("Tic Tac Toe","Winner is player 2")
-    elif b==9:
-            disableButton()
-            c=1
-            tkinter.messagebox.showinfo("Tic Tac Toe","Match is Draw.")
+        for condition in winning_conditions:
+            if self.buttons[condition[0]]['text'] == self.buttons[condition[1]]['text'] == self.buttons[condition[2]]['text'] != ' ':
+                return True
 
-    if a==1 and c==0:
-        playerturn['text']="   Player 1 turn!   "
-    elif a==0 and c==0:
-        playerturn['text']="   Player 2 turn!   "
-            
-root.mainloop()
+        return False
 
+if __name__ == "__main__":
+    root = Tk()
+    game = TicTacToe(root)
+    root.mainloop()
